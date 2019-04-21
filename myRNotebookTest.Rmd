@@ -3,9 +3,11 @@ title: "R Notebook"
 output: html_notebook
 ---
 
-This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute code within the notebook, the results appear beneath the code. 
+# Based On Course 'Introduction to Time Series Analysis' on Data Camp
+# Chapter 1 , Exploratory time series data analysis
+#   https://www.datacamp.com/courses/introduction-to-time-series-analysisLinks 
 
-Try executing this chunk by clicking the *Run* button within the chunk or by placing your cursor inside it and pressing *Ctrl+Shift+Enter*. 
+
 
 ```{r}
 unempData =read.csv(url("https://data.ny.gov/api/views/5hyu-bdh8/rows.csv?accessType=DOWNLOAD"),header=TRUE, stringsAsFactors = TRUE)
