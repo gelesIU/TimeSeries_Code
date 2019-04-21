@@ -1,0 +1,193 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute code within the notebook, the results appear beneath the code. 
+
+Try executing this chunk by clicking the *Run* button within the chunk or by placing your cursor inside it and pressing *Ctrl+Shift+Enter*. 
+
+```{r}
+unempData =read.csv(url("https://data.ny.gov/api/views/5hyu-bdh8/rows.csv?accessType=DOWNLOAD"),header=TRUE, stringsAsFactors = TRUE)
+
+# Fixing the Date into a YYYY-MM format
+unempData$Date <- as.Date(paste(unempData$Year, unempData$Month, sep="-"), "%Y-%M")
+# Droping the redundant Year and month 
+unempData <- subset(unempData, select=-c(Year,Month))
+# odering the Data
+unempData <- unempData[with(unempData,order(Area,Date)),]
+
+summary(unempData)
+```
+```{r}
+tail(unempData)
+```
+
+
+Creating Time Series Data for Albany City
+```{r}
+AC_DATA <- subset(unempData, Area=='Albany City')
+AC_DATA_UER <- select(AC_DATA,Unemployment.Rate)
+AC_DATA_U <- select(AC_DATA,Unemployed)
+AC_DATA_E <- select(AC_DATA,Employed)
+AC_DATA_LF <- select(AC_DATA,Labor.Force)
+
+ts_AC<-ts(AC_DATA,start=c(1990,1),end=c(2019,2),frequency=12)
+ts_AC_UER<-ts(AC_DATA_UER,start=c(1990,1),end=c(2019,2),frequency=12)
+ts_AC_U<-ts(AC_DATA_U,start=c(1990,1),end=c(2019,2),frequency=12)
+ts_AC_E<-ts(AC_DATA_E,start=c(1990,1),end=c(2019,2),frequency=12)
+ts_AC_LF<-ts(AC_DATA_LF,start=c(1990,1),end=c(2019,2),frequency=12)
+
+
+library(ggplot2)
+head(ts_AC_UER)
+
+```
+
+Les Up Understnad the Albany City Row Data ie AC_DATA and corresponding time series data ts_AC
+
+```{r}
+print(" Length ")
+length(ts_AC)
+```
+
+```{r}
+
+
+ggplot(data = AC_DATA, aes(x = Date, y = Unemployment.Rate)) +geom_line( color = "#FC4E07")
+
+
+ggplot(data = AC_DATA, aes(x = Date, y = Unemployment.Rate)) +geom_line(aes(size = Unemployment.Rate/Labor.Force), color = "#FC4E07")
+```
+
+
+We could see some trems in Row Data
+Lets See what best a Time Series Object can offer
+
+
+```{r}
+plot(ts_AC)
+plot(ts_AC_UER)
+
+```
+
+
+
+This data is Equlay spaced with out any missing value
+That could also be established from code 
+```{r}
+print("Start")
+start(ts_AC)
+print("end")
+end(ts_AC)
+
+print("deltat")
+# function returns the fixed time interval between observations
+deltat(ts_AC)
+
+print("frequency")
+#function returns the number of observations per unit time
+frequency(ts_AC)
+
+print("time")
+time(ts_AC)
+
+print("cycle")
+#cycle() function returns the position in the cycle of each observation
+cycle(ts_AC)
+```
+
+```{r}
+print("The Total Missing Values are")
+sum( is.na( ts_AC ) )
+
+```
+
+As We See there are No Missing value.. We need not impute it
+
+As we have seen some trend, in the time sesies, some seasonal factor also. We can now try out diff to remove the trend
+
+```{r}
+diff_TSAC_UER <- diff(ts_AC_UER,lag = 4)
+  
+# Plot dz
+ts.plot(diff_TSAC_UER)  
+
+# View the length of z and dz, respectively
+length(diff_TSAC)
+length(ts_AC)
+
+```
+
+We have lost some 24 rows on applying Diff since we have a Lag of 4.
+Now all what we see is some white noise.
+
+
+Lets now fit the Time series data to Arima model and find the Mean and variance
+
+```{r}
+diff_TSAC_UER
+```
+
+```{r}
+# Fit the WN model to y using the arima command
+UER_model <- arima(diff_TSAC_UER, order = c(0, 0, 0))
+mean(diff_TSAC_UER)
+var(diff_TSAC_UER)
+print("Model")
+UER_model
+```
+
+
+Lets Plot and see how does our Model fits.
+
+```{r}
+ts.plot(ts_AC_UER)
+modelCoef <- UER_model$coef
+abline(0, modelCoef)
+```
+
+Lets Do that with another variable, Employed
+
+```{r}
+ggplot(data = AC_DATA, aes(x = Date, y = Employed)) +geom_line( color = "#FC4E07")
+
+ggplot(data = AC_DATA, aes(x = Date, y = Employed)) +geom_line(aes(size = Employed/Labor.Force), color = "#FC4E07")
+
+```
+
+
+```{r}
+plot(ts_AC)
+plot(ts_AC_LF)
+```
+
+Some thing went wrong in year 2000 in our data set. Lets Look further.
+
+
+```{r}
+diff_TSAC_LF <- diff(ts_AC_LF,lag = 4)
+ts.plot(diff_TSAC_LF)  
+length(diff_TSAC_LF)
+length(ts_AC)
+```
+
+```{r}
+LF_model <- arima(diff_TSAC_LF, order = c(0, 0, 0))
+mean(diff_TSAC_LF)
+var(diff_TSAC_LF)
+print("Model_LF")
+LF_model
+```
+
+```{r}
+ts.plot(ts_AC_LF)
+modelCoef_LF <- LF_model$coef
+abline(0, modelCoef_LF)
+```
+
+
+
+When you save the notebook, an HTML file containing the code and output will be saved alongside it (click the *Preview* button or press *Ctrl+Shift+K* to preview the HTML file).
+
+The preview shows you a rendered HTML copy of the contents of the editor. Consequently, unlike *Knit*, *Preview* does not run any R code chunks. Instead, the output of the chunk when it was last run in the editor is displayed.
