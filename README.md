@@ -1,2 +1,4 @@
 # TimeSeries_Code
-For The sake of testing
+Refer the PDF version.
+The R code is copied into seperate .R file
+
