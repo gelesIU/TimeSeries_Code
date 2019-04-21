@@ -1,3 +1,7 @@
+# Based On Course 'Introduction to Time Series Analysis' on Data Camp
+# Chapter 1 , Exploratory time series data analysis
+#   https://www.datacamp.com/courses/introduction-to-time-series-analysisLinks 
+
 # Reading The Data
 
 unempData =read.csv(url("https://data.ny.gov/api/views/5hyu-bdh8/rows.csv?accessType=DOWNLOAD"),header=TRUE, stringsAsFactors = TRUE)
